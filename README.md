@@ -13,6 +13,16 @@ This example shows a small NestJS payment flow that treats third-party APIs as u
 
 Common failure modes include timeouts, transient server errors, upstream rate limits, and partial failures where your system does not know whether the remote action completed. Without defensive patterns, services can hang request threads, retry unsafe actions, or amplify provider outages across the rest of the platform.
 
+## Failure Modes This Architecture Protects Against
+
+- Slow or hung upstream calls: timeouts prevent a single provider request from tying up your worker indefinitely.
+- Brief transient outages: retry with exponential backoff gives short-lived 5xx or network failures a chance to recover without hammering the provider.
+- Retry storms during provider incidents: the circuit breaker stops repeated calls once the dependency is clearly unhealthy, which limits wasted work and protects your own service capacity.
+- Duplicate side effects after uncertain outcomes: idempotent handling ensures the same `idempotencyKey` does not create multiple payment attempts when clients retry.
+- Ambiguous partial failures: when the provider cannot be trusted, the integration returns a deferred response instead of pretending the payment succeeded.
+- Misclassified errors: retryable vs non-retryable classification avoids re-sending requests that should fail fast, such as permanent 4xx-style business errors.
+- Poor incident visibility: structured JSON logs make it easier to trace attempts, retries, circuit state, and failure reasons in production logs.
+
 ## Why Retry and Circuit Breakers Help
 
 Retries help recover from short-lived faults such as brief 5xx errors or temporary network latency. Exponential backoff reduces pressure on the provider between attempts. A circuit breaker stops repeated calls once failures cross a threshold, which protects your service from wasting resources on a dependency that is already unhealthy.
