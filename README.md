@@ -1,5 +1,7 @@
 # NestJS Reliable API Client Example
 
+This repository demonstrates reliability patterns commonly used in production backend systems.
+
 This example shows a small NestJS payment flow that treats third-party APIs as unreliable by default. A naive integration often assumes every call is fast, successful, and safe to repeat; in production that causes duplicate charges, stuck requests, noisy logs, and cascading failures when a provider is slow or down.
 
 ## What It Demonstrates
